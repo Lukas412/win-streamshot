@@ -100,17 +100,9 @@ impl CreatedHdc {
             }
         }
     }
-}
 
-impl From<&CreatedHdc> for HDC {
-    fn from(item: &CreatedHdc) -> Self {
-        HDC(item.hdc.0)
-    }
-}
-
-impl From<CreatedHdc> for HDC {
-    fn from(item: CreatedHdc) -> Self {
-        HDC(item.hdc.0)
+    pub(crate) fn inner(&self) -> HDC {
+        HDC(self.hdc.0)
     }
 }
 
@@ -155,34 +147,33 @@ impl From<Hbitmap> for HBITMAP {
 }
 
 pub struct WindowBGRBuffer {
-    handle: isize,
-    width: u32,
-    height: u32,
+    handle: HWND,
+    width: i32,
+    height: i32,
+    hdc: CreatedHdc,
+    hbitmap: Hbitmap,
     buffer: Vec<u8>,
 }
 
 impl WindowBGRBuffer {
-    pub fn read(&mut self) -> windows::core::Result<()> {
-        self.buffer.clear();
-        let hwnd = HWND(self.handle);
-
+    pub fn new(handle: HWND) -> windows::core::Result<Self> {
         unsafe {
             let _ = SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
         }
-        let hdc_screen = Hdc::get_dc(hwnd)?;
 
-        let (rect_width, rect_height) = {
-            let mut rect = RECT::default();
-            unsafe {
-                if GetWindowRect(hwnd, &mut rect).as_bool().not() {
-                    return Err(Error::from_win32());
-                };
-            }
-            (rect.right - rect.left, rect.bottom - rect.top)
-        };
+        let mut rect = RECT::default();
+        unsafe {
+            if GetWindowRect(handle, &mut rect).as_bool().not() {
+                return Err(Error::from_win32());
+            };
+        }
+        let width = rect.right - rect.left;
+        let height = rect.bottom - rect.top;
+
+        let hdc_screen = Hdc::get_dc(handle)?;
 
         let hdc = CreatedHdc::create_compatible_dc(hdc_screen.hdc)?;
-        let hbitmap = Hbitmap::create_compatible_bitmap(hdc_screen.hdc, rect_width, rect_height)?;
+        let hbitmap = Hbitmap::create_compatible_bitmap(hdc_screen.hdc, width, height)?;
 
         unsafe {
             if SelectObject(hdc.hdc, hbitmap.hbitmap).is_invalid() {
@@ -192,17 +183,28 @@ impl WindowBGRBuffer {
 
         let flags = PRINT_WINDOW_FLAGS(PW_RENDERFULLCONTENT);
         unsafe {
-            if PrintWindow(hwnd, hdc.hdc, flags) == false {
+            if PrintWindow(handle, hdc.hdc, flags) == false {
                 return Err(Error::from_win32());
             }
         }
 
+        Ok(Self {
+            handle,
+            width,
+            height,
+            hdc,
+            hbitmap,
+            buffer: vec![],
+        })
+    }
+
+    pub fn read(&mut self) -> windows::core::Result<()> {
         let bitmap_info_header = BITMAPINFOHEADER {
             biSize: size_of::<BITMAPINFOHEADER>() as u32,
             biPlanes: 1,
             biBitCount: 32,
-            biWidth: rect_width,
-            biHeight: -rect_height,
+            biWidth: self.width,
+            biHeight: -self.height,
             biCompression: BI_RGB.0 as u32,
             ..Default::default()
         };
@@ -210,38 +212,24 @@ impl WindowBGRBuffer {
             bmiHeader: bitmap_info_header,
             ..Default::default()
         };
-        self.buffer.reserve((4 * rect_width * rect_height) as usize);
+
+        self.buffer.clear();
+        self.buffer.reserve((4 * self.width * self.height) as usize);
 
         unsafe {
-            get_di_bits_into(
-                &mut self.buffer,
+            let gdb = GetDIBits(
+                self.hdc.inner(),
+                self.hbitmap.hbitmap,
+                0,
+                self.height as u32,
+                Some(self.buffer.as_mut_ptr() as *mut core::ffi::c_void),
                 &mut bit_map_info,
-                hdc.into(),
-                hbitmap.hbitmap,
-                rect_height as u32,
-            )
+                DIB_RGB_COLORS,
+            );
+            if gdb == 0 || gdb == ERROR_INVALID_PARAMETER.0 as i32 {
+                return Err(Error::new(E_FAIL, "GetDIBits error".into()));
+            }
+            Ok(())
         }
     }
-}
-
-pub unsafe fn get_di_bits_into(
-    buffer: &mut Vec<u8>,
-    bit_map_info: &mut BITMAPINFO,
-    hdc: HDC,
-    hbitmap: HBITMAP,
-    height: u32,
-) -> windows::core::Result<()> {
-    let gdb = GetDIBits(
-        hdc,
-        hbitmap,
-        0,
-        height,
-        Some(buffer.as_mut_ptr() as *mut core::ffi::c_void),
-        bit_map_info,
-        DIB_RGB_COLORS,
-    );
-    if gdb == 0 || gdb == ERROR_INVALID_PARAMETER.0 as i32 {
-        return Err(Error::new(E_FAIL, "GetDIBits error".into()));
-    }
-    Ok(())
 }
