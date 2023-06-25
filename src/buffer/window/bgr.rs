@@ -198,6 +198,18 @@ impl WindowBGRBuffer {
         })
     }
 
+    pub fn height(&self) -> i32 {
+        self.height
+    }
+
+    pub fn width(&self) -> i32 {
+        self.width
+    }
+
+    pub fn buffer(&self) -> &Vec<u8> {
+        &self.buffer
+    }
+
     pub fn read(&mut self) -> windows::core::Result<()> {
         let bitmap_info_header = BITMAPINFOHEADER {
             biSize: size_of::<BITMAPINFOHEADER>() as u32,
