@@ -1,0 +1,7 @@
+tab_spaces = 2
+use_field_init_shorthand = true
+reorder_imports = true
+imports_indent = "Block"
+imports_layout = "Mixed"
+imports_granularity = "One"
+group_imports = "StdExternalCrate"
