@@ -194,7 +194,7 @@ impl WindowBGRBuffer {
             height,
             hdc,
             hbitmap,
-            buffer: vec![],
+            buffer: vec![0; (4 * width * height) as usize],
         })
     }
 
@@ -224,9 +224,6 @@ impl WindowBGRBuffer {
             bmiHeader: bitmap_info_header,
             ..Default::default()
         };
-
-        self.buffer
-            .resize((4 * self.width * self.height) as usize, 0);
 
         unsafe {
             let gdb = GetDIBits(
