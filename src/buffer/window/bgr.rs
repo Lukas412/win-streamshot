@@ -152,7 +152,6 @@ pub struct WindowBGRBuffer {
     height: i32,
     hdc: CreatedHdc,
     hbitmap: Hbitmap,
-    bit_map_info: BITMAPINFO,
     buffer: Vec<u8>,
 }
 
@@ -189,12 +188,23 @@ impl WindowBGRBuffer {
             }
         }
 
+        Ok(Self {
+            handle,
+            width,
+            height,
+            hdc,
+            hbitmap,
+            buffer: vec![],
+        })
+    }
+
+    pub fn read(&mut self) -> windows::core::Result<()> {
         let bitmap_info_header = BITMAPINFOHEADER {
             biSize: size_of::<BITMAPINFOHEADER>() as u32,
             biPlanes: 1,
             biBitCount: 32,
-            biWidth: width,
-            biHeight: -height,
+            biWidth: self.width,
+            biHeight: -self.height,
             biCompression: BI_RGB.0 as u32,
             ..Default::default()
         };
@@ -203,18 +213,6 @@ impl WindowBGRBuffer {
             ..Default::default()
         };
 
-        Ok(Self {
-            handle,
-            width,
-            height,
-            hdc,
-            hbitmap,
-            bit_map_info,
-            buffer: vec![],
-        })
-    }
-
-    pub fn read(&mut self) -> windows::core::Result<()> {
         self.buffer.clear();
         self.buffer.reserve((4 * self.width * self.height) as usize);
 
@@ -225,7 +223,7 @@ impl WindowBGRBuffer {
                 0,
                 self.height as u32,
                 Some(self.buffer.as_mut_ptr() as *mut core::ffi::c_void),
-                &mut self.bit_map_info.clone(),
+                &mut bit_map_info.clone(),
                 DIB_RGB_COLORS,
             );
             if gdb == 0 || gdb == ERROR_INVALID_PARAMETER.0 as i32 {
