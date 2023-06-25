@@ -19,7 +19,7 @@ use {
 
 mod wrappers;
 
-pub struct WindowBGRBuffer {
+pub struct WindowScreenshotBuffer {
   handle: HWND,
   width: i32,
   height: i32,
@@ -28,7 +28,7 @@ pub struct WindowBGRBuffer {
   buffer: Vec<u8>,
 }
 
-impl WindowBGRBuffer {
+impl WindowScreenshotBuffer {
   pub fn new(handle: HWND) -> windows::core::Result<Self> {
     unsafe {
       let _ = SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
