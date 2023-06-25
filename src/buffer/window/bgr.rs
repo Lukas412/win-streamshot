@@ -225,8 +225,8 @@ impl WindowBGRBuffer {
             ..Default::default()
         };
 
-        self.buffer.clear();
-        self.buffer.reserve((4 * self.width * self.height) as usize);
+        self.buffer
+            .resize((4 * self.width * self.height) as usize, 0);
 
         unsafe {
             let gdb = GetDIBits(
