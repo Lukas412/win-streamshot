@@ -186,8 +186,8 @@ impl WindowScreenshotBuffer {
 
     unsafe {
       let gdb = GetDIBits(
-        self.hdc.inner(),
-        self.hbitmap.inner(),
+        hdc.inner(),
+        hbitmap.inner(),
         0,
         self.height as u32,
         Some(self.buffer.as_mut_ptr() as *mut core::ffi::c_void),
