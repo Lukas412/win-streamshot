@@ -35,22 +35,22 @@ impl WindowFinder {
     })
   }
 
-  pub fn find(&self, name: &str) -> Option<WindowScreenshotBuffer> {
+  pub fn find(&self, name: &str) -> Option<windows::core<WindowScreenshotBuffer>> {
     self
       .windows
       .iter()
       .filter(|window| window.name.contains(name))
       .next()
-      .map(|window| WindowScreenshotBuffer::new(window.handle)?)
+      .map(|window| WindowScreenshotBuffer::new(window.handle))
   }
 
-  pub fn find_exact(&self, name: &str) -> Option<WindowScreenshotBuffer> {
+  pub fn find_exact(&self, name: &str) -> Option<windows::core<WindowScreenshotBuffer>> {
     self
       .windows
       .iter()
       .filter(|window| window.name == name)
       .next()
-      .map(|window| WindowScreenshotBuffer::new(window.handle)?)
+      .map(|window| WindowScreenshotBuffer::new(window.handle))
   }
 }
 
