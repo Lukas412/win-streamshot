@@ -170,6 +170,14 @@ impl WindowScreenshotBuffer {
       }
     }
 
+    let flags = PRINT_WINDOW_FLAGS(PW_RENDERFULLCONTENT);
+
+    unsafe {
+      if PrintWindow(hwnd, hdc.hdc, flags) == false {
+        return Err(Error::from_win32());
+      }
+    }
+
     let bitmap_info_header = BITMAPINFOHEADER {
       biSize: size_of::<BITMAPINFOHEADER>() as u32,
       biPlanes: 1,
