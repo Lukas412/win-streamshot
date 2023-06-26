@@ -173,7 +173,7 @@ impl WindowScreenshotBuffer {
     let flags = PRINT_WINDOW_FLAGS(PW_RENDERFULLCONTENT);
 
     unsafe {
-      if PrintWindow(hwnd, hdc.hdc, flags) == false {
+      if PrintWindow(self.handle, hdc.inner(), flags) == false {
         return Err(Error::from_win32());
       }
     }
