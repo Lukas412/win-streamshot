@@ -215,6 +215,10 @@ impl<'a, Color> Screenshot<'a, Color> {
   pub fn height(&self) -> u32 {
     self.height
   }
+
+  pub fn total_pixels(&self) -> u32 {
+    self.height * self.width
+  }
 }
 
 impl<'a, Color> Deref for Screenshot<'a, Color> {
