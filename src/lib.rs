@@ -155,10 +155,11 @@ impl WindowScreenshotBuffer {
   }
 
   fn read(&mut self) -> windows::core::Result<()> {
-    let hdc_screen = HdcWrapper::get_dc(handle)?;
+    let hdc_screen = HdcWrapper::get_dc(self.handle)?;
 
     let hdc = CreatedHdcWrapper::create_compatible_dc(hdc_screen.inner())?;
-    let hbitmap = HbitmapWrapper::create_compatible_bitmap(hdc_screen.inner(), width, height)?;
+    let hbitmap =
+      HbitmapWrapper::create_compatible_bitmap(hdc_screen.inner(), self.width, self.height)?;
 
     unsafe {
       if SelectObject(hdc.inner(), hbitmap.inner()).is_invalid() {
