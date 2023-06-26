@@ -59,7 +59,7 @@ struct Window {
   name: String,
 }
 
-pub fn get_windows() -> windows::core::Result<Vec<Window>> {
+fn get_windows() -> windows::core::Result<Vec<Window>> {
   let mut windows = Vec::new();
   unsafe {
     let result = EnumWindows(
