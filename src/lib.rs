@@ -1,6 +1,7 @@
 use {
   crate::wrappers::{CreatedHdcWrapper, HbitmapWrapper, HdcWrapper},
   std::{
+    marker::PhantomData,
     mem::size_of,
     ops::{Deref, Not},
   },
@@ -206,6 +207,7 @@ pub struct Screenshot<'a, Color> {
   width: u32,
   height: u32,
   image: &'a Vec<u8>,
+  marker: PhantomData<Color>,
 }
 
 impl<'a, Color> Screenshot<'a, Color> {
