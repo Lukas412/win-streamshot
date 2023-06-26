@@ -202,8 +202,8 @@ impl WindowScreenshotBuffer {
   }
 }
 
-struct BGRA;
-struct RGBA;
+pub struct BGRA;
+pub struct RGBA;
 
 pub struct Screenshot<'a, Color> {
   width: u32,
