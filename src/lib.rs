@@ -63,7 +63,7 @@ pub fn get_windows() -> windows::core::Result<Vec<Window>> {
   unsafe {
     let result = EnumWindows(
       Some(wl_callback),
-      LPARAM(&mut windows as *mut Vec<HwndName> as isize),
+      LPARAM(&mut windows as *mut Vec<Window> as isize),
     );
     if result == false {
       return Err(Error::from_win32());
