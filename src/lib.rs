@@ -41,7 +41,7 @@ impl WindowFinder {
       .iter()
       .filter(|window| window.name.contains(name))
       .next()
-      .map(WindowScreenshotBuffer::new)
+      .map(|window| WindowScreenshotBuffer::new(window.handle)?)
   }
 
   pub fn find_exact(&self, name: &str) -> Option<WindowScreenshotBuffer> {
@@ -50,7 +50,7 @@ impl WindowFinder {
       .iter()
       .filter(|window| window.name == name)
       .next()
-      .map(WindowScreenshotBuffer::new)
+      .map(|window| WindowScreenshotBuffer::new(window.handle)?)
   }
 }
 
@@ -139,6 +139,7 @@ impl WindowScreenshotBuffer {
       width: self.width as u32,
       height: self.height as u32,
       image: &self.buffer,
+      marker: PhantomData::default(),
     })
   }
 
@@ -152,6 +153,7 @@ impl WindowScreenshotBuffer {
       width: self.width as u32,
       height: self.height as u32,
       image: &self.buffer,
+      marker: PhantomData::default(),
     })
   }
 
